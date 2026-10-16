@@ -1,27 +1,26 @@
 import { test, expect } from '@playwright/test';
 
 /**
- * PRUEBAS HEREDADAS (Parte 4).
+ * PRUEBAS HEREDADAS (Parte 4) · ya diagnosticadas y fuera de cuarentena.
  *
- * Las dejó otro equipo, y nadie sabe por qué fallan: están en CUARENTENA (test.fixme), que es lo que hacen los
- * equipos reales con pruebas rojas que no entienden, para no frenar a los demás.
- *
- * Su trabajo, una por una:
- *   1. Saquen la prueba de cuarentena (borren su línea test.fixme) y ejecútenla.
- *   2. Diagnostiquen QUÉ falla: ¿el PRODUCTO (bug), la PRUEBA (defecto de la prueba), la INESTABILIDAD o el ENTORNO?
- *      Para detectar inestabilidad ejecútenla muchas veces:  npx playwright test heredados -g H3 --repeat-each=10
- *   3. Dejen cada una en su estado correcto y anoten el veredicto en ENTREGA.md.
- * No las "arreglen" a ciegas: un rojo no siempre es un bug.
+ * H1 → DEFECTO DE LA PRUEBA. Esperaba 6 productos; la tienda muestra 8, que es lo que exige US-01 · CA1
+ *      (el ejemplo resuelto 01-catalogo también afirma 8). Dato viejo: se corrigió el valor esperado.
+ * H2 → BUG DEL PRODUCTO. El valor esperado ($ 19.760) es correcto según el requisito:
+ *      2 × 65.000 = 130.000 − 20% = 104.000 → IVA 19% = 19.760. La tienda muestra $ 24.700 (19% de 130.000).
+ *      Se reproduce a mano, falla siempre igual. Mismo defecto que US-11 · CA2 → fallo esperado con TDM-64.
+ * H3 → PRUEBA INESTABLE. Con  --repeat-each=30  falló 5 de 30 veces sin cambiar nada. Causa: esperaba solo a
+ *      'domcontentloaded' y hacía clic antes de que React conectara los eventos del botón (el clic se perdía).
+ *      Se corrigió esperando la condición correcta (la página cargada) y ubicando el botón por su tarjeta,
+ *      no por posición (.first()). Después: 40 de 40 en verde. Sin pausas fijas.
  */
 
-test('H1 · el catálogo tiene 6 productos', async ({ page }) => {
-  test.fixme(true, 'En cuarentena: nadie sabe por qué falla'); // ← borren esta línea para ejecutarla
+test('H1 · el catálogo tiene 8 productos', async ({ page }) => {
   await page.goto('/');
-  await expect(page.getByRole('heading', { level: 3 })).toHaveCount(6);
+  await expect(page.getByRole('heading', { level: 3 })).toHaveCount(8);
 });
 
 test('H2 · el IVA de 2 mochilas con DESC20 es $ 19.760', async ({ page }) => {
-  test.fixme(true, 'En cuarentena: nadie sabe por qué falla'); // ← borren esta línea para ejecutarla
+  test.fail(true, 'TDM-64 · el IVA se calcula sobre el subtotal sin restar el descuento');
   await page.goto('/');
   const tarjeta = page
     .locator('.rounded-lg')
@@ -34,8 +33,13 @@ test('H2 · el IVA de 2 mochilas con DESC20 es $ 19.760', async ({ page }) => {
 });
 
 test('H3 · agregar un cuaderno justo después de cargar', async ({ page }) => {
-  test.fixme(true, 'En cuarentena: nadie sabe por qué falla'); // ← borren esta línea para ejecutarla
-  await page.goto('/', { waitUntil: 'domcontentloaded' });
-  await page.getByRole('button', { name: 'Agregar' }).first().click();
-  await expect(page.getByRole('listitem').filter({ hasText: 'Cuaderno universitario' })).toBeVisible();
+  // Antes: page.goto('/', { waitUntil: 'domcontentloaded' }) → el clic llegaba antes de que la página respondiera.
+  await page.goto('/'); // espera el evento 'load' (una condición, no un tiempo)
+  const tarjeta = page
+    .locator('.rounded-lg')
+    .filter({ has: page.getByRole('heading', { name: 'Cuaderno universitario', level: 3 }) });
+  await tarjeta.getByRole('button', { name: 'Agregar' }).click();
+
+  const carrito = page.locator('.rounded-lg').filter({ has: page.getByRole('heading', { name: 'Carrito' }) });
+  await expect(carrito.getByRole('listitem').filter({ hasText: 'Cuaderno universitario' })).toBeVisible();
 });

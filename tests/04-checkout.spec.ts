@@ -1,16 +1,15 @@
 import { test, expect } from '@playwright/test';
+import { TiendaPage, DATOS_VALIDOS } from '../pages/TiendaPage';
 
 /**
- * BLOQUE CHECKOUT · US-13 a US-15.
+ * BLOQUE CHECKOUT · US-13 a US-15 (migrado al Page Object).
  *
- * IMPORTANTE: en el formulario de envío page.getByLabel('Nombre completo') NO encuentra el campo. Pruébenlo y
- * diagnostiquen por qué (inspeccionen el HTML). Mientras tanto, esto SÍ funciona:
- *     page.locator('label:text-is("Nombre completo") + input')
- * (la etiqueta va justo antes del campo). Los textos de las etiquetas son: "Nombre completo",
- * "Correo electrónico" y "Dirección de entrega".
+ * Hallazgo: page.getByLabel('Nombre completo') NO encuentra el campo porque los <label> del formulario no están
+ * asociados a su <input> (no tienen atributo `for`/`id` ni envuelven al campo). Además de romper getByLabel,
+ * es un problema de accesibilidad: un lector de pantalla no anuncia el nombre del campo (relacionado con US-20).
+ * Por eso TiendaPage.campo() usa  label:text-is("…") + input.
  */
 
-// Datos listos para la prueba dirigida por datos (US-15). Escribir cada correo a mano invita al error.
 const CORREOS_VALIDOS = [
   'juan@correo.com',
   'ana_gomez@gmail.com',
@@ -21,43 +20,90 @@ const CORREOS_VALIDOS = [
 ];
 const CORREOS_MAL_FORMADOS = ['ana.gmail.com', 'ana@', '@gmail.com', 'ana gomez@gmail.com', 'ana@@gmail.com', 'ana@gmail'];
 
+// Filas con bug conocido: la expresión regular del correo solo acepta letras, números y "_" antes de la arroba
+// y un único segmento de dominio (TDM-57).
+const CORREOS_CON_BUG: Record<string, string> = {
+  'ana.gomez@gmail.com': 'TDM-57',
+  'ana-gomez@gmail.com': 'TDM-57',
+  'ana+tienda@gmail.com': 'TDM-57',
+  'ana@universidad.edu.co': 'TDM-57',
+};
+
 test.describe('US-13 · Ir a pagar desde el carrito', () => {
   test('CA3: con total cero o negativo no se puede ir a pagar', async ({ page }) => {
-    test.fixme(true, 'Pendiente de automatizar');
-    // Nivel 2 · CAZABUGS.
-    // Agreguen 1 mochila y presionen "−" para llevar la cantidad a 0. El botón "Ir a pagar" debe estar deshabilitado
-    // (toBeDisabled()). Ojo: esta prueba fallará por el mismo defecto de US-06 CA2, pero es OTRO criterio y OTRO bug:
-    // aunque se corrija el "−", la tienda seguiría sin validar el total antes de cobrar.
+    // Bug distinto a TDM-48: aunque se corrija el "−", la tienda no valida el total antes de cobrar.
+    // Pendiente crear su issue en Jira y reemplazar la clave.
+    test.fail(true, 'TDM-POR-CREAR · "Ir a pagar" sigue habilitado con total $ 0 (solo valida que haya líneas)');
+    const tienda = new TiendaPage(page);
+    await tienda.abrir();
+    await tienda.agregar('Mochila escolar');
+
+    await tienda.disminuir('Mochila escolar');
+    await expect(tienda.cantidad('Mochila escolar')).toHaveText('0'); // el total queda en $ 0
+
+    await expect(tienda.botonPagar).toBeDisabled();
   });
 });
 
 test.describe('US-14 · Completar mis datos de envío', () => {
   test('CA1: con el formulario vacío hay un error por cada campo obligatorio', async ({ page }) => {
-    test.fixme(true, 'Pendiente de automatizar');
-    // Nivel 1.
-    // Agreguen un producto, "Ir a pagar", presionen "Confirmar pedido" sin llenar nada y comprueben los tres mensajes:
-    // "El nombre es obligatorio." · "El correo es obligatorio." · "La dirección es obligatoria."
+    const tienda = new TiendaPage(page);
+    await tienda.abrir();
+    await tienda.agregar('Esfero azul');
+    await tienda.irAPagar();
+
+    await tienda.confirmar();
+
+    await expect(page.getByText('El nombre es obligatorio.')).toBeVisible();
+    await expect(page.getByText('El correo es obligatorio.')).toBeVisible();
+    await expect(page.getByText('La dirección es obligatoria.')).toBeVisible();
+    await expect(tienda.pedidoConfirmado).toBeHidden();
   });
 
   test('CA2: un nombre y una dirección de solo espacios se rechazan como vacíos', async ({ page }) => {
-    test.fixme(true, 'Pendiente de automatizar');
-    // Nivel 2. Llenen nombre y dirección con "   " (tres espacios) y un correo válido.
+    const tienda = new TiendaPage(page);
+    await tienda.abrir();
+    await tienda.agregar('Esfero azul');
+    await tienda.irAPagar();
+
+    await tienda.llenarDatos({ nombre: '   ', correo: DATOS_VALIDOS.correo, direccion: '   ' });
+    await tienda.confirmar();
+
+    await expect(page.getByText('El nombre es obligatorio.')).toBeVisible();
+    await expect(page.getByText('La dirección es obligatoria.')).toBeVisible();
+    await expect(tienda.pedidoConfirmado).toBeHidden();
   });
 });
 
 test.describe('US-15 · Ingresar un correo electrónico válido', () => {
-  test('CA1-CA3: cada correo válido se acepta', async ({ page }) => {
-    test.fixme(true, 'Pendiente de automatizar');
-    // Nivel 3 · CAZABUGS · PRUEBAS DIRIGIDAS POR DATOS.
-    // Generen UNA prueba por cada correo de CORREOS_VALIDOS. Para cada una: agregar un producto, ir a pagar, llenar
-    // nombre y dirección válidos + ese correo, confirmar y comprobar que aparece "¡Pedido confirmado!".
-    // Cuando terminen, miren el reporte: ¿cuántas filas fallan? ¿Qué tienen en común?
-    // Reto: marquen como fallo conocido SOLO las filas que fallan, no todas (pista: test.fail(condicion, 'razón')).
-  });
+  for (const correo of CORREOS_VALIDOS) {
+    test(`CA1-CA3: el correo válido "${correo}" se acepta`, async ({ page }) => {
+      const bug = CORREOS_CON_BUG[correo] ?? '';
+      test.fail(bug !== '', `${bug} · la validación rechaza un correo con formato válido`);
+      const tienda = new TiendaPage(page);
+      await tienda.abrir();
+      await tienda.agregar('Esfero azul');
+      await tienda.irAPagar();
 
-  test('CA4: cada correo mal formado se rechaza con un mensaje claro', async ({ page }) => {
-    test.fixme(true, 'Pendiente de automatizar');
-    // Nivel 2. Igual que la anterior, con CORREOS_MAL_FORMADOS. Debe verse "El correo no tiene un formato válido."
-    // y NO debe aparecer "¡Pedido confirmado!".
-  });
+      await tienda.llenarDatos({ ...DATOS_VALIDOS, correo });
+      await tienda.confirmar();
+
+      await expect(tienda.pedidoConfirmado).toBeVisible();
+    });
+  }
+
+  for (const correo of CORREOS_MAL_FORMADOS) {
+    test(`CA4: el correo mal formado "${correo}" se rechaza con un mensaje claro`, async ({ page }) => {
+      const tienda = new TiendaPage(page);
+      await tienda.abrir();
+      await tienda.agregar('Esfero azul');
+      await tienda.irAPagar();
+
+      await tienda.llenarDatos({ ...DATOS_VALIDOS, correo });
+      await tienda.confirmar();
+
+      await expect(page.getByText('El correo no tiene un formato válido.')).toBeVisible();
+      await expect(tienda.pedidoConfirmado).toBeHidden();
+    });
+  }
 });
