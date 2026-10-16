@@ -1,6 +1,6 @@
 # Entrega · Laboratorio 3.1 · Introducción a la automatización de pruebas
 
-**Equipo:** `equipo-N` · **Integrantes:** Juan José Parra Flórez, _completar_ · **Repositorio:** https://github.com/Thanlysito/Equipo-Juan-Jose-Parra
+**Equipo:** `equipo-N` · **Integrantes:** Juan José Parra Flórez, José David Cortez, Johan Ospina · **Repositorio:** https://github.com/Thanlysito/Equipo-Juan-Jose-Parra
 
 > Suite: **41 pruebas** (36 escritas o diagnosticadas por el equipo + 5 de ejemplo), de las cuales **17 son fallos esperados** por bugs del producto documentados en Jira (proyecto **TDM**). `npx playwright test` termina sin fallos inesperados.
 
