@@ -58,9 +58,9 @@ Las capturas y el *trace* de cada fila están en el reporte HTML (`npm run repor
 ## 4. Medidas
 
 - Casos de prueba de nuestro plan en Jira: **20** (TDM-22 a TDM-41, uno por historia) · automatizados en este laboratorio: **15 historias** (US-01, 04, 05, 06, 07, 09, 10, 11, 12, 13, 14, 15, 16, 17 y 19) (**75 %**) con **41 pruebas**.
-- Tiempo que nos tomó escribir las pruebas automatizadas: **\_\_ min** _(completar con el tiempo real del equipo)_ · tiempo de ejecutar toda la suite: **≈ 115 s** con 1 worker; **≈ 50 s por pasada** con 4 workers en paralelo.
+- Tiempo que nos tomó escribir las pruebas automatizadas: **150 min** (2 h 30 min) · tiempo de ejecutar toda la suite: **≈ 115 s** con 1 worker; **≈ 50 s por pasada** con 4 workers en paralelo.
 - Tiempo estimado de ejecutar **a mano** esos mismos casos: **≈ 80 min** (41 casos × ≈ 2 min; los de compra completa toman más).
-- Con esos números, ¿en cuántas ejecuciones se paga la automatización? (inversión ÷ ahorro por ejecución): **inversión ÷ ≈ 78 min**. Ej.: si la escritura tomó 240 min → 240 ÷ 78 ≈ **3 ejecuciones**.
+- Con esos números, ¿en cuántas ejecuciones se paga la automatización? (inversión ÷ ahorro por ejecución): ahorro por ejecución ≈ 80 min − 2 min = **≈ 78 min** → 150 ÷ 78 ≈ 1,9 → se paga en **2 ejecuciones**; desde la tercera, todo es ganancia.
 
 ## 5. Reflexión (máximo 5 líneas cada una)
 
