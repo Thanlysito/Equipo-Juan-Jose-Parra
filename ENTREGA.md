@@ -37,7 +37,7 @@
 | 03-descuentos-iva › US-10 CA2: inválido no borra el descuento | TDM-53 | Sí | Expected "− $ 6.500" · Received "− $ 0" |
 | 03-descuentos-iva › US-11 CA2: IVA sobre el valor descontado | TDM-64 (duplicado: TDM-51) | Sí | Expected "$ 11.115" · Received "$ 12.350" |
 | 03-descuentos-iva › US-12 CA2: total con descuento | TDM-54 | Sí | Expected "$ 69.615" · Received "$ 70.850" |
-| 04-checkout › US-13 CA3: con total 0 no se puede pagar | **Por crear** (`TDM-POR-CREAR` en el código) | Sí | Expected disabled · Received enabled |
+| 04-checkout › US-13 CA3: con total 0 no se puede pagar | TDM-65 | Sí | Expected disabled · Received enabled |
 | 04-checkout › US-15 CA1-CA3: correos con `.`, `-`, `+` y `.edu.co` (4 filas) | TDM-57 | Sí (solo esas 4 filas) | No aparece "¡Pedido confirmado!" |
 | 05-confirmacion › US-16 CA1: formulario vacío en otra compra | TDM-58 | Sí | Expected "" · Received "Ana Gómez" |
 | 05-confirmacion › US-17 CA3: número tras recargar | TDM-59 | Sí | Expected not "1001" · Received "1001" |

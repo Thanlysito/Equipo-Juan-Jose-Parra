@@ -32,8 +32,7 @@ const CORREOS_CON_BUG: Record<string, string> = {
 test.describe('US-13 · Ir a pagar desde el carrito', () => {
   test('CA3: con total cero o negativo no se puede ir a pagar', async ({ page }) => {
     // Bug distinto a TDM-48: aunque se corrija el "−", la tienda no valida el total antes de cobrar.
-    // Pendiente crear su issue en Jira y reemplazar la clave.
-    test.fail(true, 'TDM-POR-CREAR · "Ir a pagar" sigue habilitado con total $ 0 (solo valida que haya líneas)');
+    test.fail(true, 'TDM-65 · "Ir a pagar" sigue habilitado con total $ 0 (solo valida que haya líneas)');
     const tienda = new TiendaPage(page);
     await tienda.abrir();
     await tienda.agregar('Mochila escolar');
