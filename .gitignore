@@ -1,0 +1,12 @@
+node_modules/
+test-results/
+test-results-solucion/
+playwright-report/
+playwright-report-solucion/
+blob-report/
+.env
+.DS_Store
+
+# Material del docente: no se publica
+GUIA_DOCENTE.md
+solucion/

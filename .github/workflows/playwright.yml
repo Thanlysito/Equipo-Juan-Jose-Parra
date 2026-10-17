@@ -1,0 +1,40 @@
+name: Pruebas automatizadas
+
+# Cada vez que hacen push (o abren un pull request), GitHub ejecuta la suite completa en una máquina limpia.
+# Si un test falla, el commit se marca con una X roja. También se puede lanzar a mano desde la pestaña Actions.
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  e2e:
+    name: Playwright · Chromium
+    # Versión fija del sistema (no "ubuntu-latest"): así la suite no cambia de entorno sin avisar.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Instalar el navegador
+        run: npx playwright install --with-deps chromium
+
+      - name: Ejecutar las pruebas
+        run: npx playwright test
+
+      # El reporte HTML se guarda siempre (incluso si fallan pruebas) para poder descargarlo y abrirlo.
+      - name: Guardar el reporte
+        uses: actions/upload-artifact@v7
+        if: ${{ !cancelled() }}
+        with:
+          name: reporte-playwright
+          path: playwright-report/
+          retention-days: 14

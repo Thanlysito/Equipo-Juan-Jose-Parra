@@ -1,0 +1,21 @@
+{
+  "name": "qa-automatizacion-lab",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Laboratorio 3.1 · Introducción a la automatización de pruebas (Verificación y validación de software)",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "test:headed": "playwright test --headed",
+    "report": "playwright show-report",
+    "codegen": "playwright codegen https://qa-tienda-pruebas.vercel.app"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
+    "@playwright/test": "^1.64.0",
+    "@types/node": "^20.19.43"
+  }
+}
